@@ -1,0 +1,36 @@
+These require simple GET requests with no extra filtering.
+
+SHOPIFY_GET_ALL_PRODUCTS → "Give me all products" -->DONE
+SHOPIFY_GET_NEW_ARRIVALS → "Show me the latest products"
+SHOPIFY_GET_BEST_SELLERS → "Show me best-selling products"
+SHOPIFY_GET_PRODUCT_DETAILS → "Tell me about [product name]" --> DONE
+SHOPIFY_CHECK_PRODUCT_AVAILABILITY → "Do you have [product name]?"-->DONE
+
+
+🟡 Medium (Category & Filter-Based Queries)
+These require GET requests with query parameters.
+
+SHOPIFY_GET_PRODUCTS_BY_CATEGORY → "Show me all shirts" / "I need pants" --DONE
+SHOPIFY_GET_PRODUCTS_BY_COLOR → "Show me red dresses"   --DONE
+SHOPIFY_GET_PRODUCTS_BY_PRICE → "Show me products under ₹1000"  --DONE
+SHOPIFY_GET_PRODUCTS_BY_MATERIAL → "Do you have cotton shirts?"
+SHOPIFY_GET_PRODUCTS_BY_BRAND → "Show me Nike shoes" --DONE
+SHOPIFY_GET_IN_STOCK_PRODUCTS → "Show me only in-stock items"
+SHOPIFY_GET_DISCOUNT_BY_CATEGORY → "Any discounts on shoes?"
+
+
+🟠 Hard (Complex Queries & External Data)
+These involve dynamic API calls or multiple endpoints.
+SHOPIFY_GET_RESTOCK_INFO → "When will [product name] be restocked?"
+SHOPIFY_GET_SHIPPING_INFO → "What’s the delivery time for [product name]?"
+SHOPIFY_GET_RETURN_POLICY → "How do I return an item?"
+SHOPIFY_GET_AVAILABLE_COUPONS → "Do you have any coupons?"
+
+❌ Removed (Since No Updates or Deletions)
+❌ SHOPIFY_ADD_TO_CART → "Add [product name] to cart"
+❌ SHOPIFY_REMOVE_FROM_CART → "Remove [product name] from cart"
+❌ SHOPIFY_GET_CART_ITEMS → "Show me my cart"
+❌ SHOPIFY_CHECKOUT → "Checkout now"
+❌ SHOPIFY_TRACK_ORDER → "Where is my order?"
+Now your ElizaOS Shopify chatbot only fetches data using GET requests! 🎯
+Would you like help in structuring API calls for these queries? 🚀

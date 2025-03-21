@@ -28,7 +28,7 @@ export interface Content {
     attachments?: Media[];
 
     /** Additional dynamic properties */
-    [key: string]: unknown;
+    [key: string]: any;
 }
 
 /**

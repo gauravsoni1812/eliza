@@ -53,5 +53,63 @@ export const createShopifyService = (accessToken: string, storeName: string) => 
         }
     };
 
-    return { getAllProducts, getProductByTitle };
+    const getProductsByCategory = async (category: string): Promise<any[]> => {
+        try {
+            const url = `${BASE_URL.replace("{SHOPIFY_STORE_NAME}", storeName)}/products.json?product_type=${encodeURIComponent(category)}`;
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Shopify-Access-Token": accessToken,
+                },
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error?.errors || response.statusText);
+            }
+
+            const data = await response.json();
+            return data.products; // Returns an array of matching products
+        } catch (error: any) {
+            console.error("Shopify API Error:", error.message);
+            throw error;
+        }
+    };
+
+    const getAllCategories = async (): Promise<any> => {
+        try {
+            const url = `${BASE_URL.replace("{SHOPIFY_STORE_NAME}", storeName)}/products.json`;
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Shopify-Access-Token": accessToken,
+                },
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error?.errors || response.statusText);
+            }
+
+            const data = await response.json();
+            return data.products; // Returns an array of products
+        } catch (error: any) {
+            console.error("Shopify API Error:", error.message);
+            throw error;
+        }
+    };
+
+    const getAllFilteredProducts = async ({}): Promise<any> => {
+
+    };
+
+    return {
+        getAllProducts,
+        getProductByTitle,
+        getProductsByCategory,
+        getAllCategories,
+        getAllFilteredProducts,
+    };
 };

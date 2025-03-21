@@ -8,19 +8,13 @@ import {
     State,
 } from "@elizaos/core";
 import { validateShopifyConfig } from "../environment";
-
 import { createShopifyService } from "../services";
-import { getShopifyProductsExamples } from "../examples/getShopifyProductsExamples";
+import { getShopifyCategoriesExamples } from "../examples/getAllShopifyCategoriesExamples";
 
-export const getShopifyProductsAction: Action = {
-    name: "SHOPIFY_GET_ALL_PRODUCTS",
-    similes: [
-        "ECOMMERCE",
-        "SHOPIFY",
-        "PRODUCTS",
-        "STORE"
-    ],
-    description: "Fetch all products from the Shopify store.",
+export const getAllShopifyCategoriesAction: Action = {
+    name: "SHOPIFY_GET_ALL_CATEGORIES",
+    similes: ["ECOMMERCE", "SHOPIFY", "CATEGORIES", "STORE"],
+    description: "Fetch all product categories from the Shopify store.",
     validate: async (runtime: IAgentRuntime) => {
         await validateShopifyConfig(runtime);
         return true;
@@ -39,25 +33,26 @@ export const getShopifyProductsAction: Action = {
         );
 
         try {
-            const products = await shopifyService.getAllProducts();
-            elizaLogger.success(`Successfully fetched Shopify products.`);
-
+            const categories = await shopifyService.getAllCategories();
+            elizaLogger.success(`Successfully fetched Shopify categories.`);
 
             if (callback) {
-                const productList = products.map((p: any) => p.title).join(", ");
+                const categoryList = categories
+                    .map((c: any) => c.title)
+                    .join(", ");
                 callback({
-                    text: `Here are the products available in your Shopify store: ${productList}`,
+                    text: `Here are the product categories available in your Shopify store: ${categoryList}`,
                 });
                 return true;
             }
         } catch (error: any) {
             elizaLogger.error("Error in Shopify plugin handler:", error);
             callback({
-                text: `Error fetching Shopify products: ${error.message}`,
+                text: `Error fetching Shopify categories: ${error.message}`,
                 content: { error: error.message },
             });
             return false;
         }
     },
-    examples: getShopifyProductsExamples as ActionExample[][],
+    examples: getShopifyCategoriesExamples as ActionExample[][],
 } as Action;

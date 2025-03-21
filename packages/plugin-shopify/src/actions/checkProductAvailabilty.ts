@@ -11,15 +11,15 @@ import {
 } from "@elizaos/core";
 import { validateShopifyConfig } from "../environment";
 import { createShopifyService } from "../services";
+import { getShopifyProductAvailabilityExamples } from "../examples/checkShopifyProductAvailabilityExamples";
+import { getShopifyProductAvailabilityTemplate } from "../templates/checkProductByTitleTemplate";
 import { ModelClass } from "@elizaos/core";
-import { getShopifyProductByTitleExamples } from "../examples/getShopifyProductByTitleExamples";
-import { getShopifyProductByTitleTemplate } from "../templates/getShopifyProductByTitleTemplate";
 
-export const getShopifyProductByTitleAction: Action = {
-    name: "SHOPIFY_GET_PRODUCT_BY_TITLE",
-    similes: ["ECOMMERCE", "SHOPIFY", "PRODUCTS", "STORE"],
+export const checkShopifyProductAvailabilityAction: Action = {
+    name: "SHOPIFY_CHECK_PRODUCT_AVAILABILITY",
+    similes: ["ECOMMERCE", "SHOPIFY", "AVAILABILITY", "STOCK"],
     description:
-        "Fetch details of a specific product from the Shopify store by title.",
+        "Check if a specific product is available in the Shopify store by title.",
     validate: async (runtime: IAgentRuntime) => {
         await validateShopifyConfig(runtime);
         return true;
@@ -38,9 +38,10 @@ export const getShopifyProductByTitleAction: Action = {
 
         const messageContext = composeContext({
             state,
-            template: getShopifyProductByTitleTemplate,
+            template: getShopifyProductAvailabilityTemplate,
         });
 
+        console.log({ messageContext }, "This is message context");
         const content = await generateMessageResponse({
             runtime,
             context: messageContext,
@@ -49,52 +50,47 @@ export const getShopifyProductByTitleAction: Action = {
 
         options.title = content.title;
 
+        if (!options.title) {
+            callback({
+                text: "Please provide a product title to check availability.",
+            });
+            return false;
+        }
         const config = await validateShopifyConfig(runtime);
         const shopifyService = createShopifyService(
             config.SHOPIFY_ACCESS_TOKEN,
             config.SHOPIFY_STORE_NAME
         );
 
-        if (!options.title) {
-            callback({ text: "Please provide a product title to search for." });
-            return false;
-        }
-
         try {
             const product = await shopifyService.getProductByTitle(
                 options.title
             );
 
-            if (!product) {
+            if (!product || product.variants[0]?.inventory_quantity === 0) {
                 callback({
-                    text: `No products found with title matching "${options.title}".`,
+                    text: `The product "${options.title}" is currently out of stock.`,
                 });
                 return false;
             }
 
-            elizaLogger.success(
-                `Successfully fetched Shopify product: ${options.title}`
-            );
+            elizaLogger.success(`Product "${options.title}" is available.`);
 
-            const productDetails = `Title: ${product.title}
-Price: $${product.variants[0]?.price}
-Stock: ${product.variants[0]?.inventory_quantity}`;
+            const stockDetails = `Title: ${product.title}
+Stock Available: ${product.variants[0]?.inventory_quantity} units`;
 
             callback({
-                text: `Here are the details of the product found:\n\n${productDetails}`,
+                text: `Yes! The product is available.\n\n${stockDetails}`,
             });
             return true;
         } catch (error: any) {
-            elizaLogger.error(
-                "Error in Shopify product search handler:",
-                error
-            );
+            elizaLogger.error("Error checking product availability:", error);
             callback({
-                text: `Error fetching product details: ${error.message}`,
+                text: `Error checking availability: ${error.message}`,
                 content: { error: error.message },
             });
             return false;
         }
     },
-    examples: getShopifyProductByTitleExamples as ActionExample[][],
+    examples: getShopifyProductAvailabilityExamples as ActionExample[][],
 } as Action;

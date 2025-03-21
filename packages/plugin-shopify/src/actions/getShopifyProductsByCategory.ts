@@ -11,15 +11,15 @@ import {
 } from "@elizaos/core";
 import { validateShopifyConfig } from "../environment";
 import { createShopifyService } from "../services";
+import { getShopifyProductsByCategoryExamples } from "../examples/getShopifyProductsByCategoryExamples";
+import { getShopifyProductCategoryTemplate } from "../templates/getShopifyProductsByCategoryTemplate";
 import { ModelClass } from "@elizaos/core";
-import { getShopifyProductByTitleExamples } from "../examples/getShopifyProductByTitleExamples";
-import { getShopifyProductByTitleTemplate } from "../templates/getShopifyProductByTitleTemplate";
 
-export const getShopifyProductByTitleAction: Action = {
-    name: "SHOPIFY_GET_PRODUCT_BY_TITLE",
-    similes: ["ECOMMERCE", "SHOPIFY", "PRODUCTS", "STORE"],
+export const getShopifyProductsByCategoryAction: Action = {
+    name: "SHOPIFY_GET_PRODUCTS_BY_CATEGORY",
+    similes: ["ECOMMERCE", "SHOPIFY", "PRODUCTS", "CATEGORY", "STORE"],
     description:
-        "Fetch details of a specific product from the Shopify store by title.",
+        "Fetch products from a specific category (Shopify Collection).",
     validate: async (runtime: IAgentRuntime) => {
         await validateShopifyConfig(runtime);
         return true;
@@ -28,7 +28,7 @@ export const getShopifyProductByTitleAction: Action = {
         runtime: IAgentRuntime,
         message: Memory,
         state: State,
-        options: { title?: string },
+        options: { category?: string },
         callback: HandlerCallback
     ) => {
         if (!state) {
@@ -38,16 +38,23 @@ export const getShopifyProductByTitleAction: Action = {
 
         const messageContext = composeContext({
             state,
-            template: getShopifyProductByTitleTemplate,
+            template: getShopifyProductCategoryTemplate,
         });
 
+        console.log({ messageContext }, "This is message context");
         const content = await generateMessageResponse({
             runtime,
             context: messageContext,
             modelClass: ModelClass.SMALL,
         });
 
-        options.title = content.title;
+        console.log(content, "This is called content");
+        options.category = content.category;
+
+        if (!options.category) {
+            callback({ text: "Please provide a valid category name." });
+            return false;
+        }
 
         const config = await validateShopifyConfig(runtime);
         const shopifyService = createShopifyService(
@@ -55,46 +62,40 @@ export const getShopifyProductByTitleAction: Action = {
             config.SHOPIFY_STORE_NAME
         );
 
-        if (!options.title) {
-            callback({ text: "Please provide a product title to search for." });
-            return false;
-        }
-
         try {
-            const product = await shopifyService.getProductByTitle(
-                options.title
+            const products = await shopifyService.getProductsByCategory(
+                options.category
             );
 
-            if (!product) {
+            if (!products || products.length === 0) {
                 callback({
-                    text: `No products found with title matching "${options.title}".`,
+                    text: `No products found in the category "${options.category}".`,
                 });
                 return false;
             }
 
             elizaLogger.success(
-                `Successfully fetched Shopify product: ${options.title}`
+                `Successfully fetched products for category: ${options.category}`
             );
 
-            const productDetails = `Title: ${product.title}
-Price: $${product.variants[0]?.price}
-Stock: ${product.variants[0]?.inventory_quantity}`;
-
+            const productDetails = products
+                .map((p: any) => `- ${p.title} ($${p.variants[0]?.price})`)
+                .join("\n");
             callback({
-                text: `Here are the details of the product found:\n\n${productDetails}`,
+                text: `Here are the products in "${options.category}":\n\n${productDetails}`,
             });
             return true;
         } catch (error: any) {
             elizaLogger.error(
-                "Error in Shopify product search handler:",
+                "Error fetching Shopify products by category:",
                 error
             );
             callback({
-                text: `Error fetching product details: ${error.message}`,
+                text: `Error fetching products: ${error.message}`,
                 content: { error: error.message },
             });
             return false;
         }
     },
-    examples: getShopifyProductByTitleExamples as ActionExample[][],
+    examples: getShopifyProductsByCategoryExamples as ActionExample[][],
 } as Action;
