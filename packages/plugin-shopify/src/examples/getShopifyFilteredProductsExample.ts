@@ -76,4 +76,49 @@ export const getAllShopifyFilteredProductsExamples: ActionExample[][] = [
             },
         },
     ],
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "Give me all the products of brand Pence",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "Let me find all the products from the brand 'Pence' available in our store for you.",
+                action: "SHOPIFY_GET_ALL_FILTERED_PRODUCTS",
+            },
+        },
+    ],
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "I want to see all Levi's items.",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "Fetching all items from 'Levi's' in your Shopify store.",
+                action: "SHOPIFY_GET_ALL_FILTERED_PRODUCTS",
+            },
+        },
+    ],
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "Show me all Nike products.",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "Finding all 'Nike' products in your Shopify store.",
+                action: "SHOPIFY_GET_ALL_FILTERED_PRODUCTS",
+            },
+        },
+    ],
 ];

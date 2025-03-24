@@ -63,6 +63,26 @@ User: "Find me a black leather jacket under 2000 from Levi's."
 \`\`\`
 
 #### **Input:**
+User: "Give me all the products of brand Pence"
+#### **Output:**
+\`\`\`json
+{
+    "brand": "Pence",
+}
+\`\`\`
+
+
+#### **Input:**
+User: "Give me all the black shirts you have"
+#### **Output:**
+\`\`\`json
+{
+    "color":"black",
+    "product":"shirts"
+}
+\`\`\`
+
+#### **Input:**
 User: "I need a white cotton t-shirt for less than 300."
 #### **Output:**
 \`\`\`json

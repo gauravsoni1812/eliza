@@ -28,12 +28,10 @@ export const getAllFilteredProductsAction: Action = {
         runtime: IAgentRuntime,
         message: Memory,
         state: State,
-        options: { color?: string; price?: number; brand?: string },
+        options: any,
         callback: HandlerCallback
     ) => {
-        if (!state) {
-            state = (await runtime.composeState(message)) as State;
-        }
+        state = state || ((await runtime.composeState(message)) as State);
         state = await runtime.updateRecentMessageState(state);
 
         const messageContext = composeContext({
@@ -41,65 +39,55 @@ export const getAllFilteredProductsAction: Action = {
             template: getAllShopifyFilteredProductsTemplate,
         });
 
-        console.log("Message Context:", messageContext);
         const content = await generateMessageResponse({
             runtime,
             context: messageContext,
             modelClass: ModelClass.SMALL,
         });
 
-
-        console.log("Generated Content:", content);
-        options.color = content.color;
-        options.price = content.price;
-        options.brand = content.brand;
-
+        options = content;
+        console.log(options, "This is options");
         const config = await validateShopifyConfig(runtime);
         const shopifyService = createShopifyService(
-            config.SHOPIFY_ACCESS_TOKEN,
+            config.SHOPIFY_STOREFRONT_ACCESS_TOKEN, // Use Storefront token here
             config.SHOPIFY_STORE_NAME
         );
 
-        if (!options.color && !options.price && !options.brand) {
+        if (
+            !options.color &&
+            !options.price &&
+            !options.brand &&
+            !options.product
+        ) {
             callback({
-                text: "Please provide at least one filter (color, price, or brand) to search for products.",
+                text: "Please provide at least one filter (color, price, brand, or product type).",
             });
             return false;
         }
 
         try {
-            const filters: any = {};
-            if (options.brand) filters.vendor = options.brand;
-            if (options.price) filters.price_max = options.price;
-            if (options.color) filters.color = options.color; // Assuming color exists in tags/metafields
+            const products =
+                await shopifyService.getAllFilteredProducts(options);
 
-            const products = await shopifyService.getAllFilteredProducts({});
-
-            if (!products || products.length === 0) {
+            if (!products.length) {
                 callback({
-                    text: `No products found matching the given filters: ${JSON.stringify(
-                        options
-                    )}`,
+                    text: `No products found matching your filters: ${JSON.stringify(options)}`,
                 });
                 return false;
             }
 
-            elizaLogger.success(
-                `Successfully fetched ${products.length} Shopify products with filters: ${JSON.stringify(
-                    options
-                )}`
-            );
-
             const productDetails = products
                 .map(
-                    (product: any) =>
-                        `Title: ${product.title}\nPrice: $${product.variants[0]?.price}\nStock: ${product.variants[0]?.inventory_quantity}\nBrand: ${product.vendor}\n----------------`
+                    (product: any) => `
+Title: ${product.title}
+Brand: ${product.vendor}
+Price: $${product.variants.edges[0].node.price.amount}
+Available Stock: ${product.variants.edges[0].node.quantityAvailable}
+----------------------------`
                 )
                 .join("\n");
 
-            callback({
-                text: `Here are the filtered products:\n\n${productDetails}`,
-            });
+            callback({ text: `Filtered Products:\n\n${productDetails}` });
             return true;
         } catch (error: any) {
             elizaLogger.error("Error fetching filtered products:", error);

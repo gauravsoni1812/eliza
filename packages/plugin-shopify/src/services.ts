@@ -1,6 +1,10 @@
 const BASE_URL = "https://{SHOPIFY_STORE_NAME}.myshopify.com/admin/api/2024-04";
+const STOREFRONT_API_URL = `https://{SHOPIFY_STORE_NAME}.myshopify.com/api/2024-04/graphql.json`;
 
-export const createShopifyService = (accessToken: string, storeName: string) => {
+export const createShopifyService = (
+    accessToken: string,
+    storeName: string
+) => {
     if (!accessToken || !storeName) {
         throw new Error("Invalid Shopify API credentials");
     }
@@ -101,8 +105,101 @@ export const createShopifyService = (accessToken: string, storeName: string) => 
         }
     };
 
-    const getAllFilteredProducts = async ({}): Promise<any> => {
+    const getAllFilteredProducts = async (filters: {
+        color?: string;
+        product?: string;
+        price?: { operator: ">" | "<" | "="; value: number };
+        brand?: string;
+    }): Promise<any[]> => {
+        let queryString = "";
 
+        if (filters.color) {
+            queryString += `tag:${filters.color} `;
+        }
+
+        if (filters.product) {
+            queryString += `${filters.product} `;
+        }
+
+        if (filters.brand) {
+            queryString += `vendor:${filters.brand} `;
+        }
+
+        const query = `
+          query($query: String!) {
+            products(first: 20, query: $query) {
+              edges {
+                node {
+                  id
+                  title
+                  vendor
+                  tags
+                  variants(first: 5) {
+                    edges {
+                      node {
+                        id
+                        title
+                        price {
+                          amount
+                        }
+                        quantityAvailable
+                        selectedOptions {
+                          name
+                          value
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(
+            STOREFRONT_API_URL.replace("{SHOPIFY_STORE_NAME}", storeName),
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Shopify-Storefront-Access-Token": accessToken,
+                },
+                body: JSON.stringify({
+                    query,
+                    variables: { query: queryString.trim() },
+                }),
+            }
+        );
+
+        const responseData = await response.json();
+
+        if (responseData.errors) {
+            console.error("Shopify API Error:", responseData.errors);
+            throw new Error(responseData.errors[0].message);
+        }
+
+        let products = responseData.data.products.edges.map(
+            (edge: any) => edge.node
+        );
+
+        // Additional price filtering (client-side)
+        if (filters.price) {
+            products = products.filter((product: any) => {
+                const productPrice = parseFloat(
+                    product.variants.edges[0].node.price.amount
+                );
+                switch (filters.price!.operator) {
+                    case ">":
+                        return productPrice > filters.price!.value;
+                    case "<":
+                        return productPrice < filters.price!.value;
+                    case "=":
+                        return productPrice === filters.price!.value;
+                }
+            });
+        }
+
+        return products;
     };
 
     return {

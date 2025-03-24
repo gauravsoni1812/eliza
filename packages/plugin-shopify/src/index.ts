@@ -12,7 +12,6 @@ export const shopifyPlugin: Plugin = {
         getShopifyProductsAction,
         getShopifyProductByTitleAction,
         checkShopifyProductAvailabilityAction,
-        getShopifyProductsByCategoryAction,
         getAllFilteredProductsAction,
     ],
     // evaluators analyze the situations and actions taken by the agent. they run after each agent action

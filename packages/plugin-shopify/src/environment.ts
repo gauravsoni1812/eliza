@@ -3,7 +3,8 @@ import { z } from "zod";
 
 export const shopifyEnvSchema = z.object({
     SHOPIFY_ACCESS_TOKEN: z.string().min(1, "Shopify API key is required"),
-    SHOPIFY_STORE_NAME:z.string().min(1,"Shopify store name is required")
+    SHOPIFY_STORE_NAME:z.string().min(1,"Shopify store name is required"),
+    SHOPIFY_STOREFRONT_ACCESS_TOKEN:z.string().min(1,"Shopify access token is required")
 });
 
 export type shopifyConfig = z.infer<typeof shopifyEnvSchema>;
@@ -14,7 +15,10 @@ export async function validateShopifyConfig(
     try {
         const config = {
             SHOPIFY_ACCESS_TOKEN: runtime.getSetting("SHOPIFY_ACCESS_TOKEN"),
-            SHOPIFY_STORE_NAME:process.env.SHOPIFY_STORE_NAME
+            SHOPIFY_STORE_NAME: runtime.getSetting("SHOPIFY_STORE_NAME"),
+            SHOPIFY_STOREFRONT_ACCESS_TOKEN: runtime.getSetting(
+                "SHOPIFY_STOREFRONT_ACCESS_TOKEN"
+            ),
         };
         return shopifyEnvSchema.parse(config);
     } catch (error) {
