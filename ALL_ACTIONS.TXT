@@ -13,9 +13,9 @@ These require GET requests with query parameters.
 SHOPIFY_GET_PRODUCTS_BY_CATEGORY → "Show me all shirts" / "I need pants" --DONE
 SHOPIFY_GET_PRODUCTS_BY_COLOR → "Show me red dresses"   --DONE
 SHOPIFY_GET_PRODUCTS_BY_PRICE → "Show me products under ₹1000"  --DONE
-SHOPIFY_GET_PRODUCTS_BY_MATERIAL → "Do you have cotton shirts?"
+SHOPIFY_GET_PRODUCTS_BY_MATERIAL → "Do you have cotton shirts?" --DONE
 SHOPIFY_GET_PRODUCTS_BY_BRAND → "Show me Nike shoes" --DONE
-SHOPIFY_GET_IN_STOCK_PRODUCTS → "Show me only in-stock items"
+SHOPIFY_GET_IN_STOCK_PRODUCTS → "Show me only in-stock items" --PENDING
 SHOPIFY_GET_DISCOUNT_BY_CATEGORY → "Any discounts on shoes?"
 
 

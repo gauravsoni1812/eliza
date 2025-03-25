@@ -76,7 +76,7 @@ export const mainCharacter = {
                     text: "We offer a hassle-free 30-day return policy. If you're not satisfied, you can return the product within 30 days for a refund or exchange. Need help with a return request?",
                 },
             },
-        ],
+        ]
     ],
     postExamples: [
         "Check out the latest gadgets that make life easier! 📱 #TechTrends #ShopNow",

@@ -121,4 +121,19 @@ export const getAllShopifyFilteredProductsExamples: ActionExample[][] = [
             },
         },
     ],
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "I want 4 Nike shoes under 2000.",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "Fetching 4 'Nike' shoes under $2000 from your Shopify store.",
+                action: "SHOPIFY_GET_ALL_FILTERED_PRODUCTS",
+            },
+        },
+    ],
 ];

@@ -148,5 +148,17 @@ export const noneAction: Action = {
                 content: { text: "beautiful all week", action: "NONE" },
             },
         ],
+        [
+            {
+                user: "{{user1}}",
+                content: { text: "I want to contact your store how can i?" },
+            },
+            {
+                user: "{{user2}}",
+                content: {
+                    text: `You can Contact us This is our Store link , <a style="color:lightblue" href="https://48pakvaan.myshopify.com/" target="_blank">https://48pakvaan.myshopify.com/</a>`,
+                },
+            },
+        ],
     ] as ActionExample[][],
 } as Action;

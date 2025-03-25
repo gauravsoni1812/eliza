@@ -1,4 +1,4 @@
-export const getAllShopifyFilteredProductsTemplate = `Extract product attributes such as color, price range, brand, and product type from the most recent message.
+export const getAllShopifyFilteredProductsTemplate = `Extract product attributes such as color, price range, brand, product type, and quantity (limit) from the most recent message.
 If any attribute is missing, leave it out from the response.
 If no relevant attributes are found, respond with an error message.
 
@@ -11,7 +11,8 @@ If no relevant attributes are found, respond with an error message.
     "price": {
         "operator": "< or > or =",
         "value": "Extracted Price (if available)"
-    }
+    },
+    "limit": "Extracted Quantity (if available)"
 }
 \`\`\`
 
@@ -67,18 +68,32 @@ User: "Give me all the products of brand Pence"
 #### **Output:**
 \`\`\`json
 {
-    "brand": "Pence",
+    "brand": "Pence"
 }
 \`\`\`
-
 
 #### **Input:**
 User: "Give me all the black shirts you have"
 #### **Output:**
 \`\`\`json
 {
-    "color":"black",
-    "product":"shirts"
+    "color": "black",
+    "product": "shirts"
+}
+\`\`\`
+
+#### **Input:**
+User: "Give me 15 black shirts under 500"
+#### **Output:**
+\`\`\`json
+{
+    "color": "black",
+    "product": "shirts",
+    "price": {
+        "operator": "<",
+        "value": "500"
+    },
+    "limit": "15"
 }
 \`\`\`
 
@@ -93,6 +108,17 @@ User: "I need a white cotton t-shirt for less than 300."
         "operator": "<",
         "value": "300"
     }
+}
+\`\`\`
+
+#### **Input:**
+User: "I want 4 Nike shoes."
+#### **Output:**
+\`\`\`json
+{
+    "product": "shoes",
+    "brand": "Nike",
+    "limit": "4"
 }
 \`\`\`
 

@@ -75,19 +75,26 @@ export const getAllFilteredProductsAction: Action = {
                 });
                 return false;
             }
+         const productDetails = products
+             .map((product: any) => {
+                 // Retrieve the image URL from the images connection.
+                 const imageUrl =
+                     product.images.edges.length > 0
+                         ? product.images.edges[0].node.originalSrc
+                         : "";
 
-            const productDetails = products
-                .map(
-                    (product: any) => `
-Title: ${product.title}
-Brand: ${product.vendor}
-Price: $${product.variants.edges[0].node.price.amount}
-Available Stock: ${product.variants.edges[0].node.quantityAvailable}
-----------------------------`
-                )
-                .join("\n");
-
-            callback({ text: `Filtered Products:\n\n${productDetails}` });
+                 return `
+<b>Title:</b> ${product.title}
+<b>Brand:</b> ${product.vendor}
+<b>Price:</b> $${product.variants.edges[0].node.price.amount}
+<b>Available Stock:</b> ${product.variants.edges[0].node.quantityAvailable}
+<b>Link:</b> <a href="https://${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}" target="_blank" style="color: lightblue;">
+https://${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}</a>\n
+<img src="${imageUrl}" alt="${product.title}" style="width: 150px; height: 200px;" />
+----------------------------<br>`;
+             })
+             .join("");
+            callback({ text: `Filtered Products:\n${productDetails}` });
             return true;
         } catch (error: any) {
             elizaLogger.error("Error fetching filtered products:", error);

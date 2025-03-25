@@ -9,24 +9,41 @@ export const createShopifyService = (
         throw new Error("Invalid Shopify API credentials");
     }
 
-    const getAllProducts = async (): Promise<any> => {
+    const getAllProducts = async (): Promise<string[]> => {
         try {
-            const url = `${BASE_URL.replace("{SHOPIFY_STORE_NAME}", storeName)}/products.json`;
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Shopify-Access-Token": accessToken,
-                },
-            });
+            const query = `
+        {
+            products(first: 20) {
+                edges {
+                    node {
+                        title
+                    }
+                }
+            }
+        }`;
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error?.errors || response.statusText);
+            const response = await fetch(
+                STOREFRONT_API_URL.replace("{SHOPIFY_STORE_NAME}", storeName),
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Shopify-Storefront-Access-Token": accessToken,
+                    },
+                    body: JSON.stringify({ query }),
+                }
+            );
+
+            const responseData = await response.json();
+
+            if (responseData.errors) {
+                console.error("Shopify API Error:", responseData.errors);
+                throw new Error(responseData.errors[0].message);
             }
 
-            const data = await response.json();
-            return data.products; // Returns an array of products
+            return responseData.data.products.edges.map(
+                (edge: any) => edge.node.title
+            );
         } catch (error: any) {
             console.error("Shopify API Error:", error.message);
             throw error;
@@ -35,22 +52,60 @@ export const createShopifyService = (
 
     const getProductByTitle = async (title: string): Promise<any> => {
         try {
-            const url = `${BASE_URL.replace("{SHOPIFY_STORE_NAME}", storeName)}/products.json?title=${encodeURIComponent(title)}`;
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Shopify-Access-Token": accessToken,
-                },
-            });
+            const query = `
+        query getProductByTitle($title: String!) {
+            products(first: 1, query: $title) {
+                edges {
+                    node {
+                        id
+                        title
+                        descriptionHtml
+                        handle
+                        vendor
+                        featuredImage{
+                            url
+                        }
+                        totalInventory
+                        variants(first: 5) {
+                           edges {
+                            node {
+                                id
+                                  price {
+                                    amount
+                                    currencyCode
+                                  }
+                               }
+                            }
+                        }
+                    }
+                }
+            }
+        }`;
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error?.errors || response.statusText);
+            const variables = { title };
+
+            const response = await fetch(
+                STOREFRONT_API_URL.replace("{SHOPIFY_STORE_NAME}", storeName),
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Shopify-Storefront-Access-Token": accessToken,
+                    },
+                    body: JSON.stringify({ query, variables }),
+                }
+            );
+
+            const responseData = await response.json();
+
+            if (responseData.errors) {
+                console.error("Shopify API Error:", responseData.errors);
+                throw new Error(responseData.errors[0].message);
             }
 
-            const data = await response.json();
-            return data.products.length ? data.products[0] : null; // Returns the first matching product or null
+            const productEdge = responseData.data.products.edges[0];
+
+            return productEdge ? productEdge.node : null;
         } catch (error: any) {
             console.error("Shopify API Error:", error.message);
             throw error;
@@ -110,6 +165,7 @@ export const createShopifyService = (
         product?: string;
         price?: { operator: ">" | "<" | "="; value: number };
         brand?: string;
+        limit?: number;
     }): Promise<any[]> => {
         let queryString = "";
 
@@ -125,36 +181,48 @@ export const createShopifyService = (
             queryString += `vendor:${filters.brand} `;
         }
 
+        // Default to 10 products if no limit is provided
+        const limit = filters.limit ?? 10;
+
         const query = `
-          query($query: String!) {
-            products(first: 20, query: $query) {
+    query($query: String!) {
+      products(first: ${limit}, query: $query) {
+        edges {
+          node {
+            id
+            title
+            vendor
+            handle
+            tags
+            images(first: 1) {
+              edges {
+                node {
+                  altText
+                  originalSrc
+                }
+              }
+            }
+            variants(first: 5) {
               edges {
                 node {
                   id
                   title
-                  vendor
-                  tags
-                  variants(first: 5) {
-                    edges {
-                      node {
-                        id
-                        title
-                        price {
-                          amount
-                        }
-                        quantityAvailable
-                        selectedOptions {
-                          name
-                          value
-                        }
-                      }
-                    }
+                  price {
+                    amount
+                  }
+                  quantityAvailable
+                  selectedOptions {
+                    name
+                    value
                   }
                 }
               }
             }
           }
-        `;
+        }
+      }
+    }
+  `;
 
         const response = await fetch(
             STOREFRONT_API_URL.replace("{SHOPIFY_STORE_NAME}", storeName),

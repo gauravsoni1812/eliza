@@ -18,7 +18,7 @@ import CopyButton from "./copy-button";
 import ChatTtsButton from "./ui/chat/chat-tts-button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import AIWriter from "react-aiwriter";
+// import AIWriter from "react-aiwriter";
 import { IAttachment } from "@/types";
 import { AudioRecorder } from "./audio-recorder";
 import { Badge } from "./ui/badge";
@@ -170,6 +170,7 @@ export default function Page({ agentId }: { agentId: UUID }) {
                 <ChatMessageList ref={messagesContainerRef}>
                     {transitions((styles, message) => {
                         const variant = getMessageVariant(message?.user);
+                        console.log(message, "This is messages");
                         return (
                             // @ts-expect-error
                             <animated.div
@@ -190,9 +191,11 @@ export default function Page({ agentId }: { agentId: UUID }) {
                                             isLoading={message?.isLoading}
                                         >
                                             {message?.user !== "user" ? (
-                                                <AIWriter>
-                                                    {message?.text}
-                                                </AIWriter>
+                                                    <div
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: message?.text,
+                                                        }}
+                                                    />
                                             ) : (
                                                 message?.text
                                             )}

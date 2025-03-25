@@ -14,12 +14,7 @@ import { getShopifyProductsExamples } from "../examples/getShopifyProductsExampl
 
 export const getShopifyProductsAction: Action = {
     name: "SHOPIFY_GET_ALL_PRODUCTS",
-    similes: [
-        "ECOMMERCE",
-        "SHOPIFY",
-        "PRODUCTS",
-        "STORE"
-    ],
+    similes: ["ECOMMERCE", "SHOPIFY", "PRODUCTS", "STORE"],
     description: "Fetch all products from the Shopify store.",
     validate: async (runtime: IAgentRuntime) => {
         await validateShopifyConfig(runtime);
@@ -34,19 +29,18 @@ export const getShopifyProductsAction: Action = {
     ) => {
         const config = await validateShopifyConfig(runtime);
         const shopifyService = createShopifyService(
-            config.SHOPIFY_ACCESS_TOKEN,
+            config.SHOPIFY_STOREFRONT_ACCESS_TOKEN,
             config.SHOPIFY_STORE_NAME
         );
 
         try {
             const products = await shopifyService.getAllProducts();
             elizaLogger.success(`Successfully fetched Shopify products.`);
-
-
+            console.log(products,"This is products")
             if (callback) {
-                const productList = products.map((p: any) => p.title).join(", ");
+                const productList = products.join(", ");
                 callback({
-                    text: `Here are the products available in your Shopify store: ${productList}`,
+                    text: `Here are the products available in your Shopify store: ${productList}\nYou can view all products here:<a style="color:lightblue" href="https://48pakvaan.myshopify.com/collections/all" target="_blank">https://48pakvaan.myshopify.com/collections/all</a>)`,
                 });
                 return true;
             }

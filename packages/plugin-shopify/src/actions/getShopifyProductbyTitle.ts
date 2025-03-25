@@ -14,6 +14,7 @@ import { createShopifyService } from "../services";
 import { ModelClass } from "@elizaos/core";
 import { getShopifyProductByTitleExamples } from "../examples/getShopifyProductByTitleExamples";
 import { getShopifyProductByTitleTemplate } from "../templates/getShopifyProductByTitleTemplate";
+import { Media } from "@elizaos/core";
 
 export const getShopifyProductByTitleAction: Action = {
     name: "SHOPIFY_GET_PRODUCT_BY_TITLE",
@@ -51,7 +52,7 @@ export const getShopifyProductByTitleAction: Action = {
 
         const config = await validateShopifyConfig(runtime);
         const shopifyService = createShopifyService(
-            config.SHOPIFY_ACCESS_TOKEN,
+            config.SHOPIFY_STOREFRONT_ACCESS_TOKEN,
             config.SHOPIFY_STORE_NAME
         );
 
@@ -64,6 +65,7 @@ export const getShopifyProductByTitleAction: Action = {
             const product = await shopifyService.getProductByTitle(
                 options.title
             );
+            console.log(options)
 
             if (!product) {
                 callback({
@@ -75,13 +77,24 @@ export const getShopifyProductByTitleAction: Action = {
             elizaLogger.success(
                 `Successfully fetched Shopify product: ${options.title}`
             );
+            console.log(product, product.variants.edges, "This is my product");
+            const productDetails = `
+<b>Title:</b> ${product.title}
+<b>Brand:</b> ${product.vendor}
+<b>Price:</b> $${product.variants?.edges[0]?.node?.price?.amount ?? "N/A"}
+<b>Available Stock:</b> ${product?.totalInventory ?? "N/A"}
+<b>Link:</b> <a href="https://${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}" target="_blank" style="color: lightblue;">
+${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}</a><br>
+`;
 
-            const productDetails = `Title: ${product.title}
-Price: $${product.variants[0]?.price}
-Stock: ${product.variants[0]?.inventory_quantity}`;
+            const images: Media[] = [{
+                id: product.featuredImage.url,
+                url: product.featuredImage.url
+            }];
 
             callback({
                 text: `Here are the details of the product found:\n\n${productDetails}`,
+                attachments: images,
             });
             return true;
         } catch (error: any) {

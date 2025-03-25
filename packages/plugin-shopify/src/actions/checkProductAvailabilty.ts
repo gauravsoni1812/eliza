@@ -14,6 +14,7 @@ import { createShopifyService } from "../services";
 import { getShopifyProductAvailabilityExamples } from "../examples/checkShopifyProductAvailabilityExamples";
 import { getShopifyProductAvailabilityTemplate } from "../templates/checkProductByTitleTemplate";
 import { ModelClass } from "@elizaos/core";
+import { Media } from "@elizaos/core";
 
 export const checkShopifyProductAvailabilityAction: Action = {
     name: "SHOPIFY_CHECK_PRODUCT_AVAILABILITY",
@@ -41,7 +42,6 @@ export const checkShopifyProductAvailabilityAction: Action = {
             template: getShopifyProductAvailabilityTemplate,
         });
 
-        console.log({ messageContext }, "This is message context");
         const content = await generateMessageResponse({
             runtime,
             context: messageContext,
@@ -66,8 +66,8 @@ export const checkShopifyProductAvailabilityAction: Action = {
             const product = await shopifyService.getProductByTitle(
                 options.title
             );
-
-            if (!product || product.variants[0]?.inventory_quantity === 0) {
+            console.log(product, "this is my product");
+            if (!product) {
                 callback({
                     text: `The product "${options.title}" is currently out of stock.`,
                 });
@@ -79,8 +79,16 @@ export const checkShopifyProductAvailabilityAction: Action = {
             const stockDetails = `Title: ${product.title}
 Stock Available: ${product.variants[0]?.inventory_quantity} units`;
 
+            const images: [Media] = product.images.map((image: any) => {
+                return {
+                    id: image.id,
+                    url: image.src,
+                };
+            });
+
             callback({
                 text: `Yes! The product is available.\n\n${stockDetails}`,
+                attachments:images
             });
             return true;
         } catch (error: any) {
