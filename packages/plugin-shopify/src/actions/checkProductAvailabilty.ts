@@ -58,7 +58,7 @@ export const checkShopifyProductAvailabilityAction: Action = {
         }
         const config = await validateShopifyConfig(runtime);
         const shopifyService = createShopifyService(
-            config.SHOPIFY_ACCESS_TOKEN,
+            config.SHOPIFY_STOREFRONT_ACCESS_TOKEN,
             config.SHOPIFY_STORE_NAME
         );
 
@@ -76,19 +76,25 @@ export const checkShopifyProductAvailabilityAction: Action = {
 
             elizaLogger.success(`Product "${options.title}" is available.`);
 
-            const stockDetails = `Title: ${product.title}
-Stock Available: ${product.variants[0]?.inventory_quantity} units`;
+            const stockDetails = `
+<b>Title:</b> ${product.title}
+<b>Brand:</b> ${product.vendor}
+<b>Price:</b> $${product.variants?.edges[0]?.node?.price?.amount ?? "N/A"}
+<b>Available Stock:</b> ${product?.totalInventory ?? "N/A"}
+<b>Link:</b> <a href="https://${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}" target="_blank" style="color: lightblue;">
+${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}</a><br>
+`;
 
-            const images: [Media] = product.images.map((image: any) => {
-                return {
-                    id: image.id,
-                    url: image.src,
-                };
-            });
+            const images: Media[] = [
+                {
+                    id: product.featuredImage.url,
+                    url: product.featuredImage.url,
+                },
+            ];
 
             callback({
-                text: `Yes! The product is available.\n\n${stockDetails}`,
-                attachments:images
+                text: `Yes! The product is available.\n${stockDetails}`,
+                attachments: images,
             });
             return true;
         } catch (error: any) {

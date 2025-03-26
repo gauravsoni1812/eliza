@@ -77,7 +77,6 @@ export const getShopifyProductByTitleAction: Action = {
             elizaLogger.success(
                 `Successfully fetched Shopify product: ${options.title}`
             );
-            console.log(product, product.variants.edges, "This is my product");
             const productDetails = `
 <b>Title:</b> ${product.title}
 <b>Brand:</b> ${product.vendor}

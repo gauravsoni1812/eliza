@@ -1,4 +1,4 @@
-export const getAllShopifyFilteredProductsTemplate = `Extract product attributes such as color, price range, brand, product type, and quantity (limit) from the most recent message.
+export const getAllShopifyFilteredProductsTemplate = `Extract product attributes such as color, price range, brand, product type, quantity (limit), and stock availability from the most recent message.
 If any attribute is missing, leave it out from the response.
 If no relevant attributes are found, respond with an error message.
 
@@ -12,7 +12,8 @@ If no relevant attributes are found, respond with an error message.
         "operator": "< or > or =",
         "value": "Extracted Price (if available)"
     },
-    "limit": "Extracted Quantity (if available)"
+    "limit": "Extracted Quantity (if available)",
+    "in_stock": "true or false (if stock availability is specified)"
 }
 \`\`\`
 
@@ -34,7 +35,7 @@ User: "I want a blue denim shirt with a price less than 500 of Zara."
 \`\`\`
 
 #### **Input:**
-User: "Show me all red sneakers below 1000 from Nike."
+User: "Show me all red sneakers below 1000 from Nike that are in stock."
 #### **Output:**
 \`\`\`json
 {
@@ -44,12 +45,13 @@ User: "Show me all red sneakers below 1000 from Nike."
     "price": {
         "operator": "<",
         "value": "1000"
-    }
+    },
+    "in_stock": "true"
 }
 \`\`\`
 
 #### **Input:**
-User: "Find me a black leather jacket under 2000 from Levi's."
+User: "Find me a black leather jacket under 2000 from Levi's that is available."
 #### **Output:**
 \`\`\`json
 {
@@ -59,7 +61,8 @@ User: "Find me a black leather jacket under 2000 from Levi's."
     "price": {
         "operator": "<",
         "value": "2000"
-    }
+    },
+    "in_stock": "true"
 }
 \`\`\`
 
@@ -73,17 +76,18 @@ User: "Give me all the products of brand Pence"
 \`\`\`
 
 #### **Input:**
-User: "Give me all the black shirts you have"
+User: "Give me all the black shirts you have in stock."
 #### **Output:**
 \`\`\`json
 {
     "color": "black",
-    "product": "shirts"
+    "product": "shirts",
+    "in_stock": "true"
 }
 \`\`\`
 
 #### **Input:**
-User: "Give me 15 black shirts under 500"
+User: "Give me 15 black shirts under 500 that are out of stock."
 #### **Output:**
 \`\`\`json
 {
@@ -93,7 +97,8 @@ User: "Give me 15 black shirts under 500"
         "operator": "<",
         "value": "500"
     },
-    "limit": "15"
+    "limit": "15",
+    "in_stock": "false"
 }
 \`\`\`
 
@@ -112,13 +117,23 @@ User: "I need a white cotton t-shirt for less than 300."
 \`\`\`
 
 #### **Input:**
-User: "I want 4 Nike shoes."
+User: "I want 4 Nike shoes in stock."
 #### **Output:**
 \`\`\`json
 {
     "product": "shoes",
     "brand": "Nike",
-    "limit": "4"
+    "limit": "4",
+    "in_stock": "true"
+}
+\`\`\`
+
+#### **Input:**
+User: "show me all the shoes you have"
+#### **Output:**
+\`\`\`json
+{
+    "product": "shoes"
 }
 \`\`\`
 

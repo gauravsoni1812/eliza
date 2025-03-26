@@ -166,6 +166,7 @@ export const createShopifyService = (
         price?: { operator: ">" | "<" | "="; value: number };
         brand?: string;
         limit?: number;
+        in_stock?: boolean;
     }): Promise<any[]> => {
         let queryString = "";
 
@@ -250,11 +251,19 @@ export const createShopifyService = (
             (edge: any) => edge.node
         );
 
-        // Additional price filtering (client-side)
+        console.log(products, "This is products before");
+        if (filters.in_stock) {
+            products = products.filter(
+                (product: any) =>
+                    product.variants.edges[0].node.quantityAvailable > 0
+            );
+        }
+
+        console.log(products, "this is products after");
         if (filters.price) {
             products = products.filter((product: any) => {
                 const productPrice = parseFloat(
-                    product.variants.edges[0].node.price.amount
+                    product.variants.edges[0]?.node.price.amount || "0"
                 );
                 switch (filters.price!.operator) {
                     case ">":
@@ -270,11 +279,60 @@ export const createShopifyService = (
         return products;
     };
 
+   const getAllDiscounts = async (): Promise<any> => {
+    try {
+        const query = `query {
+    codeDiscountNodes(first: 3) {
+      nodes {
+        id
+        codeDiscount {
+          ... on DiscountCodeBasic {
+            title
+            summary
+          }
+          ... on DiscountCodeBxgy {
+            title
+            codesCount {
+              count
+            }
+          }
+        }
+      }
+    }
+  }`;
+
+        const response = await fetch(
+            `https://${storeName}.myshopify.com/admin/api/2025-01/graphql.json`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Shopify-Access-Token": accessToken,
+                },
+                body: JSON.stringify({ query }),
+            }
+        );
+
+        const responseData = await response.json();
+      console.log(responseData,"This is response data ")
+        if (responseData.errors) {
+            console.error("Shopify API Error:", responseData.errors);
+            throw new Error(responseData.errors[0].message);
+        }
+
+        return responseData?.data?.codeDiscountNodes?.nodes || [];
+    } catch (error: any) {
+        console.error("Shopify API Error:", error.message);
+        throw error;
+    }
+};
+
     return {
         getAllProducts,
         getProductByTitle,
         getProductsByCategory,
         getAllCategories,
         getAllFilteredProducts,
+        getAllDiscounts,
     };
 };

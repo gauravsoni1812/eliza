@@ -5,6 +5,21 @@ export const getAllShopifyFilteredProductsExamples: ActionExample[][] = [
         {
             user: "{{user1}}",
             content: {
+                text: "Give me Nike red sneakers available in stock.",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "Fetching 'Nike red sneakers' that are currently in stock from your Shopify store.",
+                action: "SHOPIFY_GET_ALL_FILTERED_PRODUCTS",
+            },
+        },
+    ],
+    [
+        {
+            user: "{{user1}}",
+            content: {
                 text: "I want a blue denim shirt with a price less than 500 of Zara.",
             },
         },
@@ -110,13 +125,13 @@ export const getAllShopifyFilteredProductsExamples: ActionExample[][] = [
         {
             user: "{{user1}}",
             content: {
-                text: "Show me all Nike products.",
+                text: "show me all the shoes you have",
             },
         },
         {
             user: "{{agent}}",
             content: {
-                text: "Finding all 'Nike' products in your Shopify store.",
+                text: "Finding all 'shoes' in your Shopify store.",
                 action: "SHOPIFY_GET_ALL_FILTERED_PRODUCTS",
             },
         },
@@ -137,3 +152,6 @@ export const getAllShopifyFilteredProductsExamples: ActionExample[][] = [
         },
     ],
 ];
+
+
+

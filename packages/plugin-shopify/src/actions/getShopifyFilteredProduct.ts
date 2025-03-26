@@ -46,7 +46,6 @@ export const getAllFilteredProductsAction: Action = {
         });
 
         options = content;
-        console.log(options, "This is options");
         const config = await validateShopifyConfig(runtime);
         const shopifyService = createShopifyService(
             config.SHOPIFY_STOREFRONT_ACCESS_TOKEN, // Use Storefront token here
@@ -57,19 +56,28 @@ export const getAllFilteredProductsAction: Action = {
             !options.color &&
             !options.price &&
             !options.brand &&
-            !options.product
+            !options.product&&
+            !options.in_stock
         ) {
             callback({
-                text: "Please provide at least one filter (color, price, brand, or product type).",
+                text: "Please provide at least one filter (color, price, brand, or product type or stock availabilty).",
             });
             return false;
         }
+
+        console.log(options,"This is options")
 
         try {
             const products =
                 await shopifyService.getAllFilteredProducts(options);
 
-            if (!products.length) {
+            if(!products){
+                callback({
+                    text:"Unable to fetch products please try again"
+                })
+            }
+
+            if (products.length == 0) {
                 callback({
                     text: `No products found matching your filters: ${JSON.stringify(options)}`,
                 });
