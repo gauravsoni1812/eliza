@@ -279,9 +279,9 @@ export const createShopifyService = (
         return products;
     };
 
-   const getAllDiscounts = async (): Promise<any> => {
-    try {
-        const query = `query {
+    const getAllDiscounts = async (): Promise<any> => {
+        try {
+            const query = `query {
     codeDiscountNodes(first: 3) {
       nodes {
         id
@@ -301,31 +301,90 @@ export const createShopifyService = (
     }
   }`;
 
+            const response = await fetch(
+                `https://${storeName}.myshopify.com/admin/api/2025-01/graphql.json`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Shopify-Access-Token": accessToken,
+                    },
+                    body: JSON.stringify({ query }),
+                }
+            );
+
+            const responseData = await response.json();
+            console.log(responseData, "This is response data ");
+            if (responseData.errors) {
+                console.error("Shopify API Error:", responseData.errors);
+                throw new Error(responseData.errors[0].message);
+            }
+
+            return responseData?.data?.codeDiscountNodes?.nodes || [];
+        } catch (error: any) {
+            console.error("Shopify API Error:", error.message);
+            throw error;
+        }
+    };
+
+    const fetchAllProductTypes = async () => {
+        const query = `
+       {
+        products(first: 250) {
+            edges {
+                node {
+                    productType
+                }
+            }
+        }
+    }
+    `;
+
         const response = await fetch(
-            `https://${storeName}.myshopify.com/admin/api/2025-01/graphql.json`,
+            `https://${storeName}.myshopify.com/api/2024-01/graphql.json`,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-Shopify-Access-Token": accessToken,
+                    "X-Shopify-Storefront-Access-Token": accessToken,
                 },
                 body: JSON.stringify({ query }),
             }
         );
 
-        const responseData = await response.json();
-      console.log(responseData,"This is response data ")
-        if (responseData.errors) {
-            console.error("Shopify API Error:", responseData.errors);
-            throw new Error(responseData.errors[0].message);
-        }
+        const result = await response.json();
+        return result.data?.products?.edges;
+    };
 
-        return responseData?.data?.codeDiscountNodes?.nodes || [];
-    } catch (error: any) {
-        console.error("Shopify API Error:", error.message);
-        throw error;
+    const fetchAllVendors = async () => {
+        const query = `
+        {
+        products(first: 250) {
+            edges {
+                node {
+                    vendor
+                }
+            }
+        }
     }
-};
+    `;
+
+        const response = await fetch(
+            `https://${storeName}.myshopify.com/api/2024-01/graphql.json`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Shopify-Storefront-Access-Token": accessToken,
+                },
+                body: JSON.stringify({ query }),
+            }
+        );
+
+        const result = await response.json();
+        console.log(result,"This is result")
+        return result.data.products.edges.map((edge:any) => edge.node);
+    };
 
     return {
         getAllProducts,
@@ -334,5 +393,7 @@ export const createShopifyService = (
         getAllCategories,
         getAllFilteredProducts,
         getAllDiscounts,
+        fetchAllProductTypes,
+        fetchAllVendors,
     };
 };

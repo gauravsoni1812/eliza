@@ -9,12 +9,12 @@ import {
 } from "@elizaos/core";
 import { validateShopifyConfig } from "../environment";
 import { createShopifyService } from "../services";
-import { getShopifyCategoriesExamples } from "../examples/getAllShopifyCategoriesExamples";
+import { getShopifyBrandsExamples } from "../examples/getAllShopifyBrands";
 
-export const getAllShopifyCategoriesAction: Action = {
-    name: "SHOPIFY_GET_ALL_CATEGORIES",
-    similes: ["ECOMMERCE", "SHOPIFY", "CATEGORIES", "STORE"],
-    description: "Fetch all product categories from the Shopify store.",
+export const getAllShopifyBrandsAction: Action = {
+    name: "SHOPIFY_GET_ALL_BRNADS",
+    similes: ["ECOMMERCE", "SHOPIFY", "BRANDS", "VENDORS", "STORE"],
+    description: "Fetch all product brands from the Shopify store.",
     validate: async (runtime: IAgentRuntime) => {
         await validateShopifyConfig(runtime);
         return true;
@@ -33,26 +33,25 @@ export const getAllShopifyCategoriesAction: Action = {
         );
 
         try {
-            const categories = await shopifyService.fetchAllProductTypes();
-            elizaLogger.success(`Successfully fetched Shopify categories.`);
-            console.log(categories,"This is categories")
+            const brands = await shopifyService.fetchAllVendors();
+            elizaLogger.success(`Successfully fetched Shopify brands.`);
+            console.log(brands, "These are");
+            const show = [...new Set(brands.map((brand: any) => brand.vendor))].join(", ");
             if (callback) {
-                const categoryList = categories
-                    .map((c: any) => c.node.productType)
-                    .join(", ");
                 callback({
-                    text: `Here are the product categories available in your Shopify store: ${categoryList}`,
+                    text: `Here are the brnads available in your Shopify store :
+                    ${show}`,
                 });
                 return true;
             }
         } catch (error: any) {
             elizaLogger.error("Error in Shopify plugin handler:", error);
             callback({
-                text: `Error fetching Shopify categories: ${error.message}`,
+                text: `Error fetching Shopify brands: ${error.message}`,
                 content: { error: error.message },
             });
             return false;
         }
     },
-    examples: getShopifyCategoriesExamples as ActionExample[][],
+    examples: getShopifyBrandsExamples as ActionExample[][],
 } as Action;
