@@ -776,7 +776,7 @@ export type Character = {
 
     /** Optional configuration */
     settings?: {
-        secrets?: { [key: string]: string };
+        secrets?:any;
         intiface?: boolean;
         imageSettings?: {
             steps?: number;

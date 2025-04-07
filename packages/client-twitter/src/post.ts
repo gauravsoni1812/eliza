@@ -16,7 +16,7 @@ import { postActionResponseFooter } from "@elizaos/core";
 import { generateTweetActions } from "@elizaos/core";
 import { IImageDescriptionService, ServiceType } from "@elizaos/core";
 import { buildConversationThread } from "./utils.ts";
-import { twitterMessageHandlerTemplate } from "./interactions.ts";
+import { twitterMessageHandlerTemplate } from "./interactions.ts"; 
 import { DEFAULT_MAX_TWEET_LENGTH } from "./environment.ts";
 import {
     Client,
@@ -47,8 +47,10 @@ const twitterPostTemplate = `
 
 # Task: Generate a post in the voice and style and perspective of {{agentName}} @{{twitterUserName}}.
 Write a post that is {{adjective}} about {{topic}} (without mentioning {{topic}} directly), from the perspective of {{agentName}}. Do not add commentary or acknowledge this request, just write the post.
+The company name is HotspotSEO try to make post which advertise HotspotSEO mention the name HotspotSEO in the post
 Your response should be 1, 2, or 3 sentences (choose the length at random).
-Your response should not contain any questions. Brief, concise statements only. The total character count MUST be less than {{maxTweetLength}}. No emojis. Use \\n\\n (double spaces) between statements if there are multiple statements in your response.`;
+Add 2 hashtags relevant to the post add url of hotspotSEO https://hotspotseo.com/ in the tweet like visit our page https://hotspotseo.com.
+Your response should not contain any questions. Brief, concise statements only. The total character count MUST be less than 280. Use emojies to show emotions Dont use any double spaces or new line in the tweet it should be in the single statement`;
 
 export const twitterActionTemplate =
     `
@@ -302,6 +304,7 @@ export class TwitterPostClient {
         client: any,
         twitterUsername: string
     ): Tweet {
+        console.log(tweetResult, "This is tweetResult");
         return {
             id: tweetResult.rest_id,
             name: client.profile.screenName,
@@ -319,7 +322,7 @@ export class TwitterPostClient {
             thread: [],
             urls: [],
             videos: [],
-        } as Tweet;
+        } as unknown as Tweet;
     }
 
     async processAndCacheTweet(
@@ -430,6 +433,16 @@ export class TwitterPostClient {
 
             let result;
 
+            // const Image = await generateImage(
+            //     {
+            //         prompt: cleanedContent,
+            //         width: 512,
+            //         height: 512,
+            //         count: 1,
+            //     },
+            //     runtime
+            // );
+            // console.log(Image, "This is image");
             if (cleanedContent.length > DEFAULT_MAX_TWEET_LENGTH) {
                 result = await this.handleNoteTweet(client, cleanedContent);
             } else {

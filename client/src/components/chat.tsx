@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { IAttachment } from "@/types";
 import { AudioRecorder } from "./audio-recorder";
 import { Badge } from "./ui/badge";
+import { useSearchParams } from "react-router";
 
 interface ExtraContentFields {
     user: string;
@@ -41,6 +42,10 @@ export default function Page({ agentId }: { agentId: UUID }) {
     const formRef = useRef<HTMLFormElement>(null);
 
     const queryClient = useQueryClient();
+    const [searchParams] = useSearchParams();
+    const store = searchParams.get("store");
+    const storefront = searchParams.get("storefrontToken");
+    const accessToken = searchParams.get("accessToken");
 
     const getMessageVariant = (role: string) =>
         role !== "user" ? "received" : "sent";
@@ -102,6 +107,9 @@ export default function Page({ agentId }: { agentId: UUID }) {
         sendMessageMutation.mutate({
             message: input,
             selectedFile: selectedFile ? selectedFile : null,
+            store: store ?? "",
+            storefront,
+            accessToken,
         });
 
         setSelectedFile(null);
@@ -120,10 +128,24 @@ export default function Page({ agentId }: { agentId: UUID }) {
         mutationFn: ({
             message,
             selectedFile,
+            store,
+            storefront,
+            accessToken
         }: {
             message: string;
             selectedFile?: File | null;
-        }) => apiClient.sendMessage(agentId, message, selectedFile),
+            store: string | null;
+            storefront: string | null;
+            accessToken: string | null
+        }) =>
+            apiClient.sendMessage(
+                agentId,
+                message,
+                selectedFile,
+                store,
+                storefront,
+                accessToken
+            ),
         onSuccess: (newMessages: ContentWithUser[]) => {
             queryClient.setQueryData(
                 ["messages", agentId],

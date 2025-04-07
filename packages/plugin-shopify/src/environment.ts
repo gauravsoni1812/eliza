@@ -14,11 +14,9 @@ export async function validateShopifyConfig(
 ): Promise<shopifyConfig> {
     try {
         const config = {
-            SHOPIFY_ACCESS_TOKEN: runtime.getSetting("SHOPIFY_ACCESS_TOKEN"),
-            SHOPIFY_STORE_NAME: runtime.getSetting("SHOPIFY_STORE_NAME"),
-            SHOPIFY_STOREFRONT_ACCESS_TOKEN: runtime.getSetting(
-                "SHOPIFY_STOREFRONT_ACCESS_TOKEN"
-            ),
+            SHOPIFY_ACCESS_TOKEN: runtime.getSetting("accessToken"),
+            SHOPIFY_STORE_NAME: runtime.getSetting("store"),
+            SHOPIFY_STOREFRONT_ACCESS_TOKEN:runtime.getSetting("storefrontToken"),
         };
         return shopifyEnvSchema.parse(config);
     } catch (error) {

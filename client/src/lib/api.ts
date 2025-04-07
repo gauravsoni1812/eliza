@@ -62,7 +62,10 @@ export const apiClient = {
     sendMessage: (
         agentId: string,
         message: string,
-        selectedFile?: File | null
+        selectedFile?: File | null,
+        store?: string | null,
+        storefrontToken?: string | null,
+        accessToken?:string | null
     ) => {
         const formData = new FormData();
         formData.append("text", message);
@@ -70,6 +73,13 @@ export const apiClient = {
 
         if (selectedFile) {
             formData.append("file", selectedFile);
+        }
+        if (store && storefrontToken && accessToken) {
+            return fetcher({
+                url: `/${agentId}/message?store=${store}&storefrontToken=${storefrontToken}&accessToken=${accessToken}`,
+                method: "POST",
+                body: formData,
+            });
         }
         return fetcher({
             url: `/${agentId}/message`,

@@ -188,12 +188,21 @@ export class DirectClient {
             upload.single("file"),
             async (req: express.Request, res: express.Response) => {
                 const agentId = req.params.agentId;
+                const store = req.query.store ?? "";
+                const storefronttoken = req.query.storefrontToken ?? "";
+                const accessToken = req.query.accessToken ?? "";
+                elizaLogger.success(store, storefronttoken,accessToken, "These are tokens")
                 const roomId = stringToUuid(
                     req.body.roomId ?? "default-room-" + agentId
                 );
                 const userId = stringToUuid(req.body.userId ?? "user");
 
                 let runtime = this.agents.get(agentId);
+                runtime.character.settings.secrets = {
+                    accessToken:accessToken,
+                    storefrontToken:storefronttoken,
+                    store:store
+                }
 
                 // if runtime is null, look for runtime with the same name
                 if (!runtime) {

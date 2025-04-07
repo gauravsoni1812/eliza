@@ -1,5 +1,5 @@
-const BASE_URL = "https://{SHOPIFY_STORE_NAME}.myshopify.com/admin/api/2024-04";
-const STOREFRONT_API_URL = `https://{SHOPIFY_STORE_NAME}.myshopify.com/api/2024-04/graphql.json`;
+const BASE_URL = "https://{SHOPIFY_STORE_NAME}/admin/api/2024-04";
+const STOREFRONT_API_URL = `https://{SHOPIFY_STORE_NAME}/api/2024-04/graphql.json`;
 
 export const createShopifyService = (
     accessToken: string,
