@@ -45,6 +45,7 @@ export const getAllFilteredProductsAction: Action = {
             modelClass: ModelClass.SMALL,
         });
 
+        console.log(content,"This is my content");
         options = content;
         const config = await validateShopifyConfig(runtime);
         const shopifyService = createShopifyService(
@@ -52,7 +53,7 @@ export const getAllFilteredProductsAction: Action = {
             config.SHOPIFY_STORE_NAME
         );
 
-        if (
+        if (!options.tags &&
             !options.color &&
             !options.price &&
             !options.brand &&
@@ -64,8 +65,6 @@ export const getAllFilteredProductsAction: Action = {
             });
             return false;
         }
-
-        console.log(options,"This is options")
 
         try {
             const products =
@@ -96,8 +95,8 @@ export const getAllFilteredProductsAction: Action = {
 <b>Brand:</b> ${product.vendor}
 <b>Price:</b> $${product.variants.edges[0].node.price.amount}
 <b>Available Stock:</b> ${product.variants.edges[0].node.quantityAvailable}
-<b>Link:</b> <a href="https://${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}" target="_blank" style="color: lightblue;">
-https://${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}</a>\n
+<b>Link:</b> <a href="https://${config.SHOPIFY_STORE_NAME}/products/${product.handle}" target="_blank" style="color: lightblue;">
+https://${config.SHOPIFY_STORE_NAME}/products/${product.handle}</a>\n
 <img src="${imageUrl}" alt="${product.title}" style="width: 150px; height: 200px;" />
 ----------------------------<br>`;
              })

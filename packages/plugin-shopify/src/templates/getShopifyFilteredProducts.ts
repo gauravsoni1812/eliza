@@ -1,6 +1,7 @@
 export const getAllShopifyFilteredProductsTemplate = `Extract product attributes such as color, price range, brand, product type, quantity (limit), and stock availability from the most recent message.
 If any attribute is missing, leave it out from the response.
-If no relevant attributes are found, respond with an error message.
+If an attribute doesn't clearly map to color, brand, product, or price (like "cotton", "floral", "organic"), add it to the "tags" array.
+If no relevant attributes or tags are found, respond with an error message.
 
 ### Response Format:
 \`\`\`json
@@ -13,7 +14,8 @@ If no relevant attributes are found, respond with an error message.
         "value": "Extracted Price (if available)"
     },
     "limit": "Extracted Quantity (if available)",
-    "in_stock": "true or false (if stock availability is specified)"
+    "in_stock": "true or false (if stock availability is specified)",
+    "tags": ["Array of unstructured attributes (e.g., 'cotton', 'clothes') if any"]
 }
 \`\`\`
 
@@ -137,10 +139,51 @@ User: "show me all the shoes you have"
 }
 \`\`\`
 
+#### **Input:**
+User: "Do you have cotton-only clothes?"
+#### **Output:**
+\`\`\`json
+{
+    "tags": ["cotton", "clothes"]
+}
+\`\`\`
+
+#### **Input:**
+User: "Looking for floral summer wear."
+#### **Output:**
+\`\`\`json
+{
+    "tags": ["floral", "summer wear"]
+}
+\`\`\`
+
+#### **Input:**
+User: "Show me organic shirts under 800."
+#### **Output:**
+\`\`\`json
+{
+    "product": "shirts",
+    "price": {
+        "operator": "<",
+        "value": "800"
+    },
+    "tags": ["organic"]
+}
+\`\`\`
+
+#### **Input:**
+User: "Any pastel items available?"
+#### **Output:**
+\`\`\`json
+{
+    "tags": ["pastel"]
+}
+\`\`\`
+
 {{recentMessages}}
 
 Extract product attributes from the most recent message.
-If no valid attributes are found, return:
+If no valid attributes or tags are found, return:
 \`\`\`json
 {
     "error": "No valid product attributes found in the message."

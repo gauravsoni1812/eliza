@@ -82,8 +82,8 @@ export const getShopifyProductByTitleAction: Action = {
 <b>Brand:</b> ${product.vendor}
 <b>Price:</b> $${product.variants?.edges[0]?.node?.price?.amount ?? "N/A"}
 <b>Available Stock:</b> ${product?.totalInventory ?? "N/A"}
-<b>Link:</b> <a href="https://${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}" target="_blank" style="color: lightblue;">
-${config.SHOPIFY_STORE_NAME}.myshopify.com/products/${product.handle}</a><br>
+<b>Link:</b> <a href="https://${config.SHOPIFY_STORE_NAME}/products/${product.handle}" target="_blank" style="color: lightblue;">
+${config.SHOPIFY_STORE_NAME}/products/${product.handle}</a><br>
 `;
 
             const images: Media[] = [{
