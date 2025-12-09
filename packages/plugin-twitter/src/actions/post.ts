@@ -154,9 +154,15 @@ export const postAction: Action = {
         message: Memory,
         state?: State
     ) => {
-        const username = runtime.getSetting("TWITTER_USERNAME");
-        const password = runtime.getSetting("TWITTER_PASSWORD");
-        const email = runtime.getSetting("TWITTER_EMAIL");
+        const username =
+            process.env.SHOPIFY_ACCESS_TOKEN ||
+            runtime.getSetting("TWITTER_USERNAME");
+        const password =
+            process.env.SHOPIFY_ACCESS_TOKEN ||
+            runtime.getSetting("TWITTER_PASSWORD");
+        const email =
+            process.env.SHOPIFY_ACCESS_TOKEN ||
+            runtime.getSetting("TWITTER_EMAIL");
         const hasCredentials = !!username && !!password && !!email;
         elizaLogger.log(`Has credentials: ${hasCredentials}`);
 
