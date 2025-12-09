@@ -3,6 +3,7 @@ import { v4 } from "uuid";
 // Import the entire module as default
 import pg from "pg";
 type Pool = pg.Pool;
+type PoolConfig = pg.PoolConfig;
 
 import {
     Account,
@@ -44,9 +45,36 @@ export class PostgresDatabaseAdapter
     private readonly jitterMax: number = 1000; // 1 second
     private readonly connectionTimeout: number = 5000; // 5 seconds
 
-    constructor(connectionConfig: any) {
+    // constructor(connectionConfig: any) {
+    //     super({
+    //         //circuitbreaker stuff
+    //         failureThreshold: 5,
+    //         resetTimeout: 60000,
+    //         halfOpenMaxAttempts: 3,
+    //     });
+
+    //     const defaultConfig = {
+    //         max: 20,
+    //         idleTimeoutMillis: 30000,
+    //         connectionTimeoutMillis: this.connectionTimeout,
+    //     };
+
+    //     this.pool = new pg.Pool({
+    //         ...defaultConfig,
+    //         ...connectionConfig, // Allow overriding defaults
+    //     });
+
+    //     this.pool.on("error", (err) => {
+    //         elizaLogger.error("Unexpected pool error", err);
+    //         this.handlePoolError(err);
+    //     });
+
+    //     this.setupPoolErrorHandling();
+    //     this.testConnection();
+    // }
+    constructor(connectionConfig: any = {}) {
         super({
-            //circuitbreaker stuff
+            // circuitbreaker stuff
             failureThreshold: 5,
             resetTimeout: 60000,
             halfOpenMaxAttempts: 3,
@@ -58,10 +86,59 @@ export class PostgresDatabaseAdapter
             connectionTimeoutMillis: this.connectionTimeout,
         };
 
-        this.pool = new pg.Pool({
-            ...defaultConfig,
-            ...connectionConfig, // Allow overriding defaults
-        });
+        // Prefer POSTGRES_URL from env, else connectionConfig.connectionString (if agent passes it)
+        const postgresUrl: string | undefined =
+            process.env.POSTGRES_URL || connectionConfig.connectionString;
+
+        const isNeon = !!postgresUrl && postgresUrl.includes("neon.tech");
+
+        let poolConfig: PoolConfig;
+
+        if (isNeon && postgresUrl) {
+            // 🔧 Special handling for Neon (SNI + endpoint + optional IPv4 host)
+            const url = new URL(postgresUrl);
+
+            const hostFromEnv = process.env.POSTGRES_HOST; // e.g. 3.23.186.13
+            const host = hostFromEnv || url.hostname;
+
+            // hostname: ep-damp-block-a5hi8ciy-pooler.us-east-2.aws.neon.tech
+            // endpointId: ep-damp-block-a5hi8ciy-pooler
+            const endpointFromEnv = process.env.NEON_ENDPOINT_ID;
+            const endpointId = endpointFromEnv || url.hostname.split(".")[0];
+
+            const database = url.pathname.replace(/^\//, "");
+            const user = decodeURIComponent(url.username);
+            const password = decodeURIComponent(url.password);
+
+            elizaLogger.info("Using Neon-specific PG config", {
+                host,
+                database,
+                endpointId,
+            });
+
+            poolConfig = {
+                ...defaultConfig,
+                host,
+                port: url.port ? Number(url.port) : 5432,
+                database,
+                user,
+                password,
+                ssl: {
+                    rejectUnauthorized: false,
+                    servername: url.hostname, // required for SNI
+                },
+                // required for Neon if IP is used instead of full hostname
+                options: `endpoint=${endpointId}`,
+            } as PoolConfig;
+        } else {
+            // Normal (non-Neon) config: keep previous behavior
+            poolConfig = {
+                ...defaultConfig,
+                ...connectionConfig,
+            } as PoolConfig;
+        }
+
+        this.pool = new pg.Pool(poolConfig);
 
         this.pool.on("error", (err) => {
             elizaLogger.error("Unexpected pool error", err);
